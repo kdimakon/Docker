@@ -1,15 +1,18 @@
-FROM alpine:latest AS base
-
-LABEL maintainer="xxxx@gmail.com"
+FROM alpine:latest
 
 RUN apk update \
-    && apk add --no-cache wget \
-    && mkdir /test
+    && apk upgrade \
+    && apk add --update --no-cache python3 \
+    && ln -sf python3 /usr/bin/python \
+    && python3 -m ensurepip \
+    && pip3 install --no-cache --upgrade pip setuptools
 
-WORKDIR /test
+RUN mkdir /etc/listen 
 
-RUN wget -O test_speed.zip http://speedtest.wdc01.softlayer.com/downloads/test10.zip
+WORKDIR /etc/listen
 
-FROM kramos/alpine-zip:latest AS zip
+COPY listen.py /etc/listen
 
-COPY --from=base /test/test_speed.zip /tmp
+CMD [ "python", "./listen.py" ]
+
+EXPOSE 9090
